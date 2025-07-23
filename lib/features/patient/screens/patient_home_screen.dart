@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:telemed_frontend/features/patient/screens/med_tracker.dart';
 import 'doctor_search_screen.dart';
 import 'doctor_details_screen.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +12,7 @@ import 'mendr_ai_screen.dart';
 import 'wikipedia_screen.dart';
 
 class PatientHomeScreen extends StatefulWidget {
-  const PatientHomeScreen({Key? key}) : super(key: key);
+  const PatientHomeScreen({super.key});
 
   @override
   State<PatientHomeScreen> createState() => _PatientHomeScreenState();
@@ -105,7 +106,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               int index = entry.key;
               var doctor = entry.value;
               return _buildDoctorCard(doctor, index);
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -184,12 +185,14 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       Icons.menu_book_outlined
     ];
     final screens = [
-      AppointmentScreen(),
+      PatientAppointmentsScreen(),
       guideId != null
-          ? DrugsTrackerScreen(guideId: guideId!)
+                ? MedicationTrackingScreen()
+
+          //? DrugsTrackerScreen(guideId: guideId!)
           : const NoMedicationScreen(), // 👈 shows message if no guide
       MendrAIScreen(),
-      WikipediaScreen(),
+      PillImageFetcher(),
     ];
 
     return Row(

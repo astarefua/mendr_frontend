@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
-  const RoleSelectionScreen({Key? key}) : super(key: key);
+  const RoleSelectionScreen({super.key});
 
   Future<void> _handleSelection(BuildContext context, String role) async {
     final prefs = await SharedPreferences.getInstance();
@@ -75,7 +75,7 @@ class RoleCard extends StatelessWidget {
   final Color iconColor;
   final VoidCallback onTap;
 
-  const RoleCard({
+  const RoleCard({super.key, 
     required this.title,
     required this.icon,
     required this.borderColor,

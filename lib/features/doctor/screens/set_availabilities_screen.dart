@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class SetAvailabilityScreen extends StatefulWidget {
+  const SetAvailabilityScreen({super.key});
+
   @override
   _SetAvailabilityScreenState createState() => _SetAvailabilityScreenState();
 }
@@ -19,7 +21,7 @@ class _SetAvailabilityScreenState extends State<SetAvailabilityScreen> {
   final TextEditingController _startTimeController = TextEditingController();
   final TextEditingController _endTimeController = TextEditingController();
 
-  List<Map<String, String>> _availabilities = [];
+  final List<Map<String, String>> _availabilities = [];
 
   void _addAvailability() {
     if (_selectedDay != null &&
@@ -185,11 +187,11 @@ class _SetAvailabilityScreenState extends State<SetAvailabilityScreen> {
             ),
             ElevatedButton(
               onPressed: _submitAvailabilities,
-              child: Text('Save All Availabilities'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: Size(double.infinity, 50),
               ),
+              child: Text('Save All Availabilities'),
             ),
           ],
         ),

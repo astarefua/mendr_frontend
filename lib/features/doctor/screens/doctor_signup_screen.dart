@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class DoctorSignupScreen extends StatefulWidget {
+  const DoctorSignupScreen({super.key});
+
   @override
   _DoctorSignupScreenState createState() => _DoctorSignupScreenState();
 }

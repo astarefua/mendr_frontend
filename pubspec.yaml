@@ -39,6 +39,16 @@ dependencies:
 
   font_awesome_flutter: ^10.7.0
 
+  table_calendar: ^3.0.9
+
+  flutter_datetime_picker_plus: ^2.1.0
+  slide_to_act: ^2.0.1
+
+  
+  url_launcher: ^6.2.1
+
+
+
 
 
 

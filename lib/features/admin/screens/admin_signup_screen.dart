@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class AdminSignupScreen extends StatefulWidget {
+  const AdminSignupScreen({super.key});
+
   @override
   _AdminSignupScreenState createState() => _AdminSignupScreenState();
 }

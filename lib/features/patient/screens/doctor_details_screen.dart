@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:telemed_frontend/features/patient/screens/appointment_booking.dart';
+import 'package:telemed_frontend/features/patient/screens/appointments_list_screen.dart';
 
 
 import 'appointment_booking_screen.dart';
@@ -11,7 +13,7 @@ import 'appointment_booking_screen.dart';
 
 class DoctorDetailsScreen extends StatefulWidget {
   final int doctorId;
-  const DoctorDetailsScreen({required this.doctorId});
+  const DoctorDetailsScreen({super.key, required this.doctorId});
 
   @override
   _DoctorDetailsScreenState createState() => _DoctorDetailsScreenState();
@@ -275,7 +277,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BookAppointmentScreen(
+        builder: (context) =>BookAppointmentScreen(
           doctorId: _doctor!['id'],
           patientId: patientId,
           availableSlots: availableSlots,
@@ -317,7 +319,7 @@ class PolygonBorder extends ShapeBorder {
   final int sides;
   final double borderWidth;
 
-  PolygonBorder({this.sides = 8, this.borderWidth = 1.0});
+  const PolygonBorder({this.sides = 8, this.borderWidth = 1.0});
 
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.all(borderWidth);
@@ -332,10 +334,11 @@ class PolygonBorder extends ShapeBorder {
     for (int i = 0; i < sides; i++) {
       final x = center.dx + radius * math.cos(i * angle);
       final y = center.dy + radius * math.sin(i * angle);
-      if (i == 0)
+      if (i == 0) {
         path.moveTo(x, y);
-      else
+      } else {
         path.lineTo(x, y);
+      }
     }
     path.close();
     return path;

@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MendrAIScreen extends StatefulWidget {
-  const MendrAIScreen({Key? key}) : super(key: key);
+  const MendrAIScreen({super.key});
 
   @override
   State<MendrAIScreen> createState() => _MendrAIScreenState();

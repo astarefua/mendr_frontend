@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'doctor_details_screen.dart'; // Update this path as necessary
 
 class DoctorSearchScreen extends StatefulWidget {
+  const DoctorSearchScreen({super.key});
+
   @override
   _DoctorSearchScreenState createState() => _DoctorSearchScreenState();
 }
