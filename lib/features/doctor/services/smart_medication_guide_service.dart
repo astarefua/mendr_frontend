@@ -1,3 +1,4 @@
+
 // smart_medication_guide_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -60,14 +61,18 @@ class SmartMedicationGuideService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getPatientMedicationGuides(int patientId) async {
+  /// Gets medication guides for the current authenticated user
+  /// - Patients: Only see their own guides
+  /// - Doctors: Only see guides they created
+  static Future<List<Map<String, dynamic>>> getCurrentUserMedicationGuides() async {
     try {
       final token = await _getToken();
       if (token == null) {
         throw Exception('Authentication token not found');
       }
 
-      final uri = Uri.parse('$baseUrl/api/medication-guides/patient/$patientId');
+      // Updated to use the privacy-protected endpoint
+      final uri = Uri.parse('$baseUrl/api/medication-guides');
       final response = await http.get(
         uri,
         headers: {
@@ -87,6 +92,14 @@ class SmartMedicationGuideService {
       print('Error fetching medication guides: $e');
       return [];
     }
+  }
+
+  /// @deprecated This method violates privacy by allowing access to any patient's guides
+  /// Use getCurrentUserMedicationGuides() instead
+  @Deprecated('Use getCurrentUserMedicationGuides() for privacy protection')
+  static Future<List<Map<String, dynamic>>> getPatientMedicationGuides(int patientId) async {
+    // Redirect to privacy-safe method
+    return getCurrentUserMedicationGuides();
   }
 
   static Future<Map<String, dynamic>?> getMedicationGuide(int guideId) async {

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:telemed_frontend/features/doctor/screens/doctor_guides_screen.dart';
 import 'package:telemed_frontend/features/doctor/screens/doctor_medication_guides_tab.dart';
 import 'package:telemed_frontend/features/doctor/screens/doctor_prescription_final_tab.dart';
 import 'package:telemed_frontend/features/doctor/screens/doctor_prescriptions_tab.dart';
 import 'package:telemed_frontend/features/doctor/screens/doctor_reviews_tab.dart';
 import 'package:telemed_frontend/features/doctor/screens/medication_guide_tab.dart';
+import 'package:telemed_frontend/utils/constants.dart' as Constants;
 import '../../../utils/constants.dart';
 import '../../video_call/video_launcher_screen.dart';
 import 'doctor_availability_tab.dart'; // Add this import
@@ -210,33 +212,62 @@ String? appointmentsErrorMessage;
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 3),
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(40),
-                              child: doctorData?['profilePictureUrl'] != null &&
-                                      doctorData!['profilePictureUrl'].isNotEmpty
-                                  ? Image.network(
-                                      doctorData!['profilePictureUrl'],
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          color: Colors.white,
-                                          child: Icon(
-                                            Icons.person,
-                                            size: 40,
-                                            color: Color(0xFF2ECC71),
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  : Container(
-                                      color: Colors.white,
-                                      child: Icon(
-                                        Icons.person,
-                                        size: 40,
-                                        color: Color(0xFF2ECC71),
-                                      ),
-                                    ),
-                            ),
+                            child: // Improved version of your profile image display
+ClipRRect(
+  borderRadius: BorderRadius.circular(40),
+  child: doctorData?['profilePictureUrl'] != null &&
+          doctorData!['profilePictureUrl'].toString().isNotEmpty
+      ? Image.network(
+          // Construct the full URL for the image
+          '${Constants.baseUrl}${doctorData!['profilePictureUrl']}', // Make sure to prepend your base URL
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: 80,
+              height: 80,
+              color: Colors.grey[200],
+              child: Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          (loadingProgress.expectedTotalBytes ?? 1)
+                      : null,
+                  strokeWidth: 2,
+                  color: Color(0xFF2ECC71),
+                ),
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            print('Error loading profile image: $error');
+            print('Image URL: ${Constants.baseUrl}${doctorData!['profilePictureUrl']}');
+            return Container(
+              width: 80,
+              height: 80,
+              color: Colors.grey[100],
+              child: Icon(
+                Icons.person,
+                size: 40,
+                color: Color(0xFF2ECC71),
+              ),
+            );
+          },
+        )
+      : Container(
+          width: 80,
+          height: 80,
+          color: Colors.grey[100],
+          child: Icon(
+            Icons.person,
+            size: 40,
+            color: Color(0xFF2ECC71),
+          ),
+        ),
+),
+                            
                           ),
                           const SizedBox(width: 16),
                           // Doctor Info
@@ -574,7 +605,7 @@ String? appointmentsErrorMessage;
 
           //_buildPlaceholderTab('Tab 4'),
 
-          const MedicationGuideTab(),
+          const DoctorGuidesScreen(),
 
           //const     DoctorMedicationGuidesTab(), // NEW TAB 5
 

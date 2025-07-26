@@ -1,85 +1,138 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:telemed_frontend/features/patient/services/firebase_service.dart';
 import '../../utils/constants.dart'; // ✅ or the correct relative path
 
 
 class AuthService {
-  //static const String baseUrl = 'http://localhost:8080';
-
-  static Future<bool> registerPatient({
-    required String name,
-    required String email,
-    required String password,
-    required String role,
-    required String gender,
-    required String contactNumber,
-    required String emergencyContactName,
-    required String emergencyContactRelationship,
-    required String emergencyContactPhone,
-    required String dateOfBirth,
-    required String profilePictureUrl,
-  }) async {
-    final uri = Uri.parse('$baseUrl/auth/register');
-    final response = await http.post(
-      uri,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "email": email,
-        "password": password,
-        "role": role.toLowerCase(),
-        "name": name,
-        "dateOfBirth": dateOfBirth,
-        "gender": gender,
-        "contactNumber": contactNumber,
-        "emergencyContactName": emergencyContactName,
-        "emergencyContactRelationship": emergencyContactRelationship,
-        "emergencyContactPhone": emergencyContactPhone,
-        "profilePictureUrl": profilePictureUrl,
-      }),
-    );
+  
+static Future<bool> registerPatient({
+  required String name,
+  required String email,
+  required String password,
+  required String role,
+  required String gender,
+  required String contactNumber,
+  required String emergencyContactName,
+  required String emergencyContactRelationship,
+  required String emergencyContactPhone,
+  required String dateOfBirth,
+  XFile? profileImage, // Changed from String to XFile?
+}) async {
+  try {
+    final uri = Uri.parse('$baseUrl/auth/register-with-file');
+    var request = http.MultipartRequest('POST', uri);
+    
+    // Add all form fields
+    request.fields['email'] = email;
+    request.fields['password'] = password;
+    request.fields['role'] = role.toLowerCase();
+    request.fields['name'] = name;
+    request.fields['dateOfBirth'] = dateOfBirth;
+    request.fields['gender'] = gender;
+    request.fields['contactNumber'] = contactNumber;
+    request.fields['emergencyContactName'] = emergencyContactName;
+    request.fields['emergencyContactRelationship'] = emergencyContactRelationship;
+    request.fields['emergencyContactPhone'] = emergencyContactPhone;
+    
+    // Add profile picture if provided
+    if (profileImage != null) {
+      var multipartFile = await http.MultipartFile.fromPath(
+        'profilePicture',
+        profileImage.path,
+      );
+      request.files.add(multipartFile);
+    }
+    
+    final response = await request.send();
+    print('Registration response status: ${response.statusCode}');
+    
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      final responseBody = await response.stream.bytesToString();
+      print('Registration failed with response: $responseBody');
+    }
+    
     return response.statusCode == 200 || response.statusCode == 201;
+    
+  } catch (e) {
+    print('Registration error: $e');
+    return false;
   }
+}
 
-  static Future<bool> registerDoctor({
-    required String name,
-    required String email,
-    required String password,
-    required String role,
-    required int age,
-    required String specialty,
-    required String profilePictureUrl,
-    required int yearsOfExperience,
-    required String education,
-    required String certifications,
-    required String languagesSpoken,
-    required String bio,
-    required String affiliations,
-  }) async {
-    final uri = Uri.parse('$baseUrl/auth/register');
-    final response = await http.post(
-      uri,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "name": name,
-        "email": email,
-        "password": password,
-        "role": role.toLowerCase(),
-        "age": age,
-        "specialty": specialty,
-        "profilePictureUrl": profilePictureUrl,
-        "yearsOfExperience": yearsOfExperience,
-        "education": education,
-        "certifications": certifications,
-        "languagesSpoken": languagesSpoken,
-        "bio": bio,
-        "affiliations": affiliations,
-      }),
-    );
+
+  
+// Replace your existing registerDoctor method in AuthService with this updated version
+static Future<bool> registerDoctor({
+  required String name,
+  required String email,
+  required String password,
+  required String role,
+  required String specialty,
+  required int yearsOfExperience,
+  required String education,
+  required String certifications,
+  required String languagesSpoken,
+  required String bio,
+  required String affiliations,
+  double reviewsRating = 0.0,
+  XFile? profileImage, // Changed from String to XFile?
+}) async {
+  try {
+    final uri = Uri.parse('$baseUrl/auth/register-doctor-with-file');
+    var request = http.MultipartRequest('POST', uri);
+    
+    // Add all form fields
+    request.fields['email'] = email;
+    request.fields['password'] = password;
+    request.fields['role'] = role.toLowerCase();
+    request.fields['name'] = name;
+    request.fields['specialty'] = specialty;
+    request.fields['yearsOfExperience'] = yearsOfExperience.toString();
+    request.fields['education'] = education;
+    request.fields['certifications'] = certifications;
+    request.fields['languagesSpoken'] = languagesSpoken;
+    request.fields['affiliations'] = affiliations;
+    request.fields['bio'] = bio;
+    request.fields['reviewsRating'] = reviewsRating.toString();
+    
+    // Add profile picture if provided
+    if (profileImage != null) {
+      var multipartFile = await http.MultipartFile.fromPath(
+        'profilePicture',
+        profileImage.path,
+      );
+      request.files.add(multipartFile);
+    }
+    
+    final response = await request.send();
+    print('Doctor registration response status: ${response.statusCode}');
+    
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      final responseBody = await response.stream.bytesToString();
+      print('Doctor registration failed with response: $responseBody');
+    }
+    
     return response.statusCode == 200 || response.statusCode == 201;
+    
+  } catch (e) {
+    print('Doctor registration error: $e');
+    return false;
   }
+}
 
+  
+
+
+
+
+
+
+
+  
   static Future<bool> registerAdmin({
     required String name,
     required String email,
@@ -100,7 +153,9 @@ class AuthService {
     return response.statusCode == 200 || response.statusCode == 201;
   }
 
-  // auth_service.dart
+  
+
+// Update your existing auth_service.dart login method
 static Future<bool> login({required String email, required String password}) async {
   final uri = Uri.parse('$baseUrl/auth/login');
   final response = await http.post(
@@ -115,6 +170,10 @@ static Future<bool> login({required String email, required String password}) asy
       final token = data['token'];
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
+      
+      // Register FCM token after successful login
+      await FirebaseService.registerTokenWithBackend();
+      
       return true;
     }
   }
@@ -122,6 +181,12 @@ static Future<bool> login({required String email, required String password}) asy
   print('Login failed: ${response.statusCode} ${response.body}');
   return false;
 }
+
+
+
+
+
+
 
   static Future<Map<String, dynamic>?> getUserFromToken() async {
     final prefs = await SharedPreferences.getInstance();

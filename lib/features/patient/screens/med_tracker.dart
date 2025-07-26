@@ -271,6 +271,12 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text('Medication Tracker'),
+
+        
+
+
+
+
         backgroundColor: Color(0xFF2ECC71),
         foregroundColor: Colors.white,
         bottom: TabBar(

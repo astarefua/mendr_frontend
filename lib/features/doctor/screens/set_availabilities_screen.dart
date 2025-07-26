@@ -96,18 +96,6 @@ class _SetAvailabilityScreenState extends State<SetAvailabilityScreen> {
 
 
 
-  // Future<void> _selectTime(TextEditingController controller) async {
-  //   final TimeOfDay? picked = await showTimePicker(
-  //     context: context,
-  //     initialTime: TimeOfDay.now(),
-  //   );
-  //   if (picked != null) {
-  //     final now = DateTime.now();
-  //     final formattedTime = TimeOfDay(hour: picked.hour, minute: picked.minute).format(context);
-  //     controller.text = picked.format(context);
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

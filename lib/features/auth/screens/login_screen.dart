@@ -74,54 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 
-  // Future<void> _submit() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     final success = await AuthService.login(
-  //       email: _emailController.text.trim(),
-  //       password: _passwordController.text.trim(),
-  //     );
-
-  //     if (success) {
-  //       final user = await AuthService.getUserFromToken();
-
-  //       if (user != null && user.containsKey('role')) {
-  //         final rawRole = user['role'].toString();
-  //         final normalizedRole = rawRole.replaceAll("ROLE_", "").toLowerCase();
-
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(content: Text("Login successful")),
-  //         );
-
-  //         if (normalizedRole == 'patient') {
-  //           final patientId = user['id'];
-  //           if (patientId != null && patientId is int) {
-  //             final prefs = await SharedPreferences.getInstance();
-  //             await prefs.setInt('patientId', patientId);
-  //           }
-
-  //           Navigator.pushReplacementNamed(context, '/home/patient');
-  //         } else if (normalizedRole == 'doctor') {
-  //           Navigator.pushReplacementNamed(context, '/home/doctor');
-  //         } else if (normalizedRole == 'admin') {
-  //           Navigator.pushReplacementNamed(context, '/admin/user-management');
-  //         } else {
-  //           ScaffoldMessenger.of(context).showSnackBar(
-  //             SnackBar(content: Text("Unknown role: $rawRole")),
-  //           );
-  //         }
-  //       } else {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(content: Text("Invalid token or missing role.")),
-  //         );
-  //       }
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Invalid email or password")),
-  //       );
-  //     }
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

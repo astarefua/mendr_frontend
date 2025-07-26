@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../../../utils/constants.dart'; // Adjust path as needed
+import '../../../utils/constants.dart'; 
 
 class SmartMedicationGuide {
   final int id;

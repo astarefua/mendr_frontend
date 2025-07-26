@@ -73,7 +73,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
         return;
       }
 
-      final uri = Uri.parse('$baseUrl/api/appointments/patient/$patientId');
+      final uri = Uri.parse('$baseUrl/api/appointments/patient/upcoming');
       final response = await http.get(
         uri,
         headers: {
@@ -200,7 +200,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6FFFC),
       appBar: AppBar(
-        title: const Text('My Appointments'),
+        title: const Text('Upcoming Appointments'),
         backgroundColor: const Color(0xFF2ECC71),
         foregroundColor: Colors.white,
         actions: [

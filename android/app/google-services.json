@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "482877895128",
+    "project_id": "medication-tracker-be364",
+    "storage_bucket": "medication-tracker-be364.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:482877895128:android:a418db8cab78221331c2ad",
+        "android_client_info": {
+          "package_name": "com.example.telemed_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEqTaLgdejyQRxLJtnetdFRU1VUG_KpG4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

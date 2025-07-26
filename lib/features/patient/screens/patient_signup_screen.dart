@@ -46,31 +46,62 @@ class _PatientSignupScreenState extends State<PatientSignupScreen> {
     if (picked != null) setState(() => _profileImage = picked);
   }
 
-  Future<void> _submit() async {
-    if (_formKey.currentState!.validate()) {
-      final success = await AuthService.registerPatient(
-        name: _nameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
-        role: "patient",
-        gender: _gender,
-        contactNumber: _phoneController.text,
-        emergencyContactName: _emergencyNameController.text,
-        emergencyContactRelationship: _emergencyRelationshipController.text,
-        emergencyContactPhone: _emergencyPhoneController.text,
-        dateOfBirth: _selectedDate?.toIso8601String() ?? '',
-        profilePictureUrl: _profileImage?.path ?? '',
-      );
 
-      if (success) {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('hasSignedUp_patient', true);
-  Navigator.pushReplacementNamed(context, '/login');
-} else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Registration failed")));
-      }
+  // Replace your existing _submit method in PatientSignupScreen with this updated version
+
+Future<void> _submit() async {
+  if (_formKey.currentState!.validate()) {
+    final success = await AuthService.registerPatient(
+      name: _nameController.text,
+      email: _emailController.text,
+      password: _passwordController.text,
+      role: "patient",
+      gender: _gender,
+      contactNumber: _phoneController.text,
+      emergencyContactName: _emergencyNameController.text,
+      emergencyContactRelationship: _emergencyRelationshipController.text,
+      emergencyContactPhone: _emergencyPhoneController.text,
+      dateOfBirth: _selectedDate?.toIso8601String() ?? '',
+      profileImage: _profileImage, // Pass the XFile directly instead of the path
+    );
+
+    if (success) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('hasSignedUp_patient', true);
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Registration failed"))
+      );
     }
   }
+}
+
+//   Future<void> _submit() async {
+//     if (_formKey.currentState!.validate()) {
+//       final success = await AuthService.registerPatient(
+//         name: _nameController.text,
+//         email: _emailController.text,
+//         password: _passwordController.text,
+//         role: "patient",
+//         gender: _gender,
+//         contactNumber: _phoneController.text,
+//         emergencyContactName: _emergencyNameController.text,
+//         emergencyContactRelationship: _emergencyRelationshipController.text,
+//         emergencyContactPhone: _emergencyPhoneController.text,
+//         dateOfBirth: _selectedDate?.toIso8601String() ?? '',
+//         profilePictureUrl: _profileImage?.path ?? '',
+//       );
+
+//       if (success) {
+//   final prefs = await SharedPreferences.getInstance();
+//   await prefs.setBool('hasSignedUp_patient', true);
+//   Navigator.pushReplacementNamed(context, '/login');
+// } else {
+//         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Registration failed")));
+//       }
+//     }
+//   }
 
   @override
   Widget build(BuildContext context) {

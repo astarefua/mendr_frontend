@@ -3,18 +3,23 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+
+     // ✅ Apply it here
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.telemed_frontend"
     //compileSdk = flutter.compileSdkVersion
-    compileSdk = 34
+    compileSdk = 35
     ndkVersion = "27.0.12077973" // <-- ADD THIS
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true // ✅ this line is required
+
     }
 
     kotlinOptions {
@@ -26,10 +31,18 @@ android {
         applicationId = "com.example.telemed_frontend"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        //minSdk = flutter.minSdkVersion
+
+        minSdk = 21
+
+        //targetSdkVersion(34)
+
+        
+
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
     }
 
     buildTypes {
@@ -40,6 +53,12 @@ android {
         }
     }
 }
+
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+}
+
 
 flutter {
     source = "../.."

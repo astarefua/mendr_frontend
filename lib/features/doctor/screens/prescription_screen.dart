@@ -101,54 +101,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
 
 
-
-  // Future<void> _issuePrescription() async {
-  //   if (!_formKey.currentState!.validate()) return;
-
-  //   setState(() => _isLoading = true);
-
-  //   try {
-  //     final result = await PrescriptionService.createPrescription(
-  //       appointmentId: widget.appointmentId,
-  //       medicationName: _medicationController.text.trim(),
-  //       dosage: _dosageController.text.trim(),
-  //       notes: _notesController.text.trim(),
-  //     );
-
-  //     if (!mounted) return;
-
-  //     if (result != null) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           content: Text('Prescription issued successfully!'),
-  //           backgroundColor: Color(0xFF2ECC71),
-  //         ),
-  //       );
-        
-  //       // Navigate back to doctor dashboard or appointments list
-  //       Navigator.of(context).popUntil((route) => route.isFirst);
-  //       Navigator.pushReplacementNamed(context, '/home/doctor');
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           content: Text('Failed to issue prescription. Please try again.'),
-  //           backgroundColor: Colors.red,
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     if (!mounted) return;
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Error: ${e.toString()}'),
-  //         backgroundColor: Colors.red,
-  //       ),
-  //     );
-  //   } finally {
-  //     if (mounted) setState(() => _isLoading = false);
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

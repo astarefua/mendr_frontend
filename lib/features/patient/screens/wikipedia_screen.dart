@@ -1,31 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../../../utils/constants.dart'; // ✅ or the correct relative path
 
-class PillImageFetcher extends StatefulWidget {
-  const PillImageFetcher({Key? key}) : super(key: key);
 
-  @override
-  State<PillImageFetcher> createState() => _PillImageFetcherState();
+void main() {
+  runApp(DrugInfoApp());
 }
 
-class _PillImageFetcherState extends State<PillImageFetcher> {
+class DrugInfoApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Drug Information',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: DrugSearchScreen(),
+    );
+  }
+}
+
+class DrugSearchScreen extends StatefulWidget {
+  @override
+  _DrugSearchScreenState createState() => _DrugSearchScreenState();
+}
+
+class _DrugSearchScreenState extends State<DrugSearchScreen> {
   final TextEditingController _drugNameController = TextEditingController();
-  String? _imageUrl;
-  String? _errorMessage;
   bool _isLoading = false;
+  String? _errorMessage;
 
-  // Replace with your actual backend URL
-  static const String baseUrl = 'http://your-backend-url.com';
+  // Replace with your actual backend URL - use the same baseUrl from your constants
   
-  // Replace with your actual JWT token or implement token management
-  static const String authToken = 'your_jwt_token_here';
+  
+  Future<String?> _getAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
 
-  Future<void> fetchPillImage(String drugName) async {
-    if (drugName.trim().isEmpty) {
+  Future<void> _searchDrugInfo() async {
+    final drugName = _drugNameController.text.trim();
+    
+    if (drugName.isEmpty) {
       setState(() {
         _errorMessage = 'Please enter a drug name';
-        _imageUrl = null;
       });
       return;
     }
@@ -33,65 +55,72 @@ class _PillImageFetcherState extends State<PillImageFetcher> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-      _imageUrl = null;
     });
 
     try {
-      final uri = Uri.parse('$baseUrl/pill-image')
-          .replace(queryParameters: {'drugName': drugName.trim()});
+      // Get token from SharedPreferences
+      final token = await _getAuthToken();
+      
+      if (token == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Authentication required. Please login again.';
+        });
+        return;
+      }
 
       final response = await http.get(
-        uri,
+        Uri.parse('$baseUrl/api/medication/pill-image?drugName=${Uri.encodeComponent(drugName)}'),
         headers: {
-          'Authorization': 'Bearer $authToken',
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
+      setState(() {
+        _isLoading = false;
+      });
+
       if (response.statusCode == 200) {
-        String result = response.body;
+        final wikipediaUrl = response.body;
         
-        // Remove quotes if the response is a JSON string
-        if (result.startsWith('"') && result.endsWith('"')) {
-          result = result.substring(1, result.length - 1);
-        }
-        
-        // Check if it's an error message or valid URL
-        if (result.startsWith('Error') || result.startsWith('No Wikimedia image found')) {
-          setState(() {
-            _errorMessage = result;
-            _imageUrl = null;
-          });
+        // Check if it's a valid URL or an error message
+        if (wikipediaUrl.startsWith('http')) {
+          // Navigate to Wikipedia screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => WikipediaScreen(
+                url: wikipediaUrl,
+                drugName: drugName,
+              ),
+            ),
+          );
         } else {
           setState(() {
-            _imageUrl = result;
-            _errorMessage = null;
+            _errorMessage = wikipediaUrl; // Display the error message from backend
           });
         }
       } else if (response.statusCode == 401) {
         setState(() {
-          _errorMessage = 'Authentication failed. Please check your credentials.';
-          _imageUrl = null;
+          _errorMessage = 'Authentication failed. Please login again.';
         });
+        // Optionally, you can clear the token and redirect to login
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('token');
       } else if (response.statusCode == 403) {
         setState(() {
           _errorMessage = 'Access denied. Patient role required.';
-          _imageUrl = null;
         });
       } else {
         setState(() {
-          _errorMessage = 'Failed to fetch image. Status: ${response.statusCode}';
-          _imageUrl = null;
+          _errorMessage = 'Error: ${response.statusCode} - ${response.reasonPhrase}';
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Network error: ${e.toString()}';
-        _imageUrl = null;
-      });
-    } finally {
-      setState(() {
         _isLoading = false;
+        _errorMessage = 'Network error. Please check your connection.';
       });
     }
   }
@@ -100,203 +129,136 @@ class _PillImageFetcherState extends State<PillImageFetcher> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pill Image Finder'),
-        backgroundColor: Colors.blue.shade700,
+        title: Text('Drug Information Search'),
+        backgroundColor: Colors.blue[700],
         foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Drug name input
-            TextField(
-              controller: _drugNameController,
-              decoration: const InputDecoration(
-                labelText: 'Drug Name',
-                hintText: 'Enter drug name (e.g., Aspirin, Ibuprofen)',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.medication),
-              ),
-              onSubmitted: (value) => fetchPillImage(value),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Search button
-            ElevatedButton(
-              onPressed: _isLoading 
-                  ? null 
-                  : () => fetchPillImage(_drugNameController.text),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade700,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: _isLoading
-                  ? const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Search Drug Information',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[700],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      controller: _drugNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Enter Drug Name',
+                        hintText: 'e.g., Aspirin, Ibuprofen',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        SizedBox(width: 8),
-                        Text('Searching...'),
-                      ],
-                    )
-                  : const Text('Search Pill Image'),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Results area
-            Expanded(
-              child: _buildResultWidget(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResultWidget() {
-    if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Fetching pill image...'),
-          ],
-        ),
-      );
-    }
-    
-    if (_errorMessage != null) {
-      return Center(
-        child: Card(
-          color: Colors.red.shade50,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: Colors.red.shade700,
+                        prefixIcon: Icon(Icons.medical_services),
+                      ),
+                      onSubmitted: (_) => _searchDrugInfo(),
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _searchDrugInfo,
+                      child: _isLoading
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text('Searching...'),
+                              ],
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.search),
+                                SizedBox(width: 8),
+                                Text('Search Wikipedia'),
+                              ],
+                            ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[700],
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Error',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red.shade700,
+              ),
+            ),
+            if (_errorMessage != null) ...[
+              SizedBox(height: 20),
+              Card(
+                color: Colors.red[50],
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error, color: Colors.red),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red[700]),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  _errorMessage!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.red.shade600),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-    
-    if (_imageUrl != null) {
-      return Column(
-        children: [
-          Text(
-            'Pill Image for "${_drugNameController.text}"',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Card(
-              elevation: 4,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  _imageUrl!,
-                  fit: BoxFit.contain,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.broken_image,
-                            size: 64,
-                            color: Colors.grey,
+              ),
+            ],
+            SizedBox(height: 30),
+            Card(
+              color: Colors.blue[50],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.info, color: Colors.blue[700]),
+                        SizedBox(width: 8),
+                        Text(
+                          'How it works',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[700],
                           ),
-                          SizedBox(height: 8),
-                          Text('Failed to load image'),
-                        ],
-                      ),
-                    );
-                  },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Enter a drug name to get detailed information from Wikipedia. The app will display the complete Wikipedia page with comprehensive drug information.',
+                      style: TextStyle(color: Colors.blue[600]),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Image URL: $_imageUrl',
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      );
-    }
-    
-    // Default state
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.medication,
-            size: 64,
-            color: Colors.grey,
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Enter a drug name to search for pill images',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -308,23 +270,143 @@ class _PillImageFetcherState extends State<PillImageFetcher> {
   }
 }
 
-// Usage example - add this to your main.dart or wherever you want to use it
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class WikipediaScreen extends StatefulWidget {
+  final String url;
+  final String drugName;
+
+  const WikipediaScreen({
+    Key? key,
+    required this.url,
+    required this.drugName,
+  }) : super(key: key);
+
+  @override
+  _WikipediaScreenState createState() => _WikipediaScreenState();
+}
+
+class _WikipediaScreenState extends State<WikipediaScreen> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeWebView();
+  }
+
+  void _initializeWebView() {
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading progress if needed
+          },
+          onPageStarted: (String url) {
+            setState(() {
+              _isLoading = true;
+              _errorMessage = null;
+            });
+          },
+          onPageFinished: (String url) {
+            setState(() {
+              _isLoading = false;
+            });
+          },
+          onWebResourceError: (WebResourceError error) {
+            setState(() {
+              _isLoading = false;
+              _errorMessage = 'Failed to load page: ${error.description}';
+            });
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.url));
+  }
+
+  void _refreshPage() {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    _controller.reload();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Pill Image Finder',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('${widget.drugName} - Wikipedia'),
+        backgroundColor: Colors.blue[700],
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _refreshPage,
+            tooltip: 'Refresh',
+          ),
+          IconButton(
+            icon: Icon(Icons.open_in_browser),
+            onPressed: () {
+              // You can implement opening in external browser if needed
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('URL: ${widget.url}'),
+                  action: SnackBarAction(
+                    label: 'Copy',
+                    onPressed: () {
+                      // Implement copy to clipboard functionality
+                    },
+                  ),
+                ),
+              );
+            },
+            tooltip: 'Open in Browser',
+          ),
+        ],
       ),
-      home: const PillImageFetcher(),
+      body: Stack(
+        children: [
+          if (_errorMessage != null)
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error, size: 64, color: Colors.red),
+                  SizedBox(height: 16),
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _refreshPage,
+                    child: Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          else
+            WebViewWidget(controller: _controller),
+          if (_isLoading)
+            Container(
+              color: Colors.white.withOpacity(0.8),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Loading Wikipedia page...'),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
-}
-
-void main() {
-  runApp(const MyApp());
 }
