@@ -88,94 +88,120 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Register Doctor"),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Container(color: Colors.grey.shade300, height: 1),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                const SizedBox(height: 20),
-                const Text("Doctor Registration", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                const Text("Join our healthcare professional network", style: TextStyle(color: Colors.grey)),
-                const SizedBox(height: 20),
-
-                // Profile Image Picker
                 GestureDetector(
                   onTap: _pickImage,
                   child: Container(
+                    height: 120,
+                    width: double.infinity,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey.shade300, width: 2),
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                        style: BorderStyle.solid,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.grey.shade50,
                     ),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundImage: _profileImage != null ? FileImage(File(_profileImage!.path)) : null,
-                      child: _profileImage == null 
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.camera_alt, size: 30, color: Colors.grey),
-                              Text("Add Photo", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                            ],
+                    child: _profileImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(
+                              File(_profileImage!.path),
+                              fit: BoxFit.cover,
+                            ),
                           )
-                        : null,
-                    ),
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.cloud_upload_outlined,
+                                size: 40,
+                                color: Colors.grey.shade600,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Upload Profile Picture',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Tap to select from gallery',
+                                style: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text("Tap to add profile picture (Optional)", 
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
                 const SizedBox(height: 20),
 
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name *',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: 'Full Name'),
                   validator: (val) => val!.isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email Address *',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: 'Email Address'),
                   keyboardType: TextInputType.emailAddress,
-                  validator: (val) => val!.contains('@') ? null : 'Enter valid email',
+                  validator: (val) =>
+                      val!.contains('@') ? null : 'Enter valid email',
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password *',
-                    border: const OutlineInputBorder(),
+                    labelText: 'Password',
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
-                  validator: (val) => val!.length < 6 ? 'Password must be at least 6 characters' : null,
+                  obscureText: _obscurePassword,
+                  validator: (val) =>
+                      val!.length < 6 ? 'Minimum 6 characters' : null,
                 ),
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<String>(
-                  value: _selectedRole,
+                  value: 'Doctor',
                   items: ['Doctor']
-                      .map((role) => DropdownMenuItem(value: role, child: Text(role)))
+                      .map(
+                        (role) =>
+                            DropdownMenuItem(value: role, child: Text(role)),
+                      )
                       .toList(),
-                  onChanged: (val) => setState(() => _selectedRole = val),
-                  decoration: const InputDecoration(
-                    labelText: 'Role *',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (val) => val == null ? 'Please select a role' : null,
+                  onChanged: (_) {},
+                  decoration: const InputDecoration(labelText: 'Role'),
                 ),
                 const SizedBox(height: 16),
 
@@ -185,20 +211,22 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                       .map((specialty) => DropdownMenuItem(value: specialty, child: Text(specialty)))
                       .toList(),
                   onChanged: (val) => setState(() => _selectedSpecialty = val),
-                  decoration: const InputDecoration(
-                    labelText: 'Medical Specialty *',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Medical Specialty'),
                   validator: (val) => val == null ? 'Please select a specialty' : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Professional Information",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 8),
 
                 TextFormField(
                   controller: _yearsExperienceController,
-                  decoration: const InputDecoration(
-                    labelText: 'Years of Experience *',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: 'Years of Experience'),
                   keyboardType: TextInputType.number,
                   validator: (val) => val!.isEmpty ? 'Required' : null,
                 ),
@@ -206,54 +234,47 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
 
                 TextFormField(
                   controller: _educationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Medical Education',
-                    border: OutlineInputBorder(),
-                    hintText: 'e.g., MD from University of Ghana',
-                  ),
-                  maxLines: 2,
+                  decoration: InputDecoration(labelText: 'Medical Education'),
+                  minLines: 1,
+                  maxLines: 3,
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _certificationsController,
-                  decoration: const InputDecoration(
-                    labelText: 'Certifications',
-                    border: OutlineInputBorder(),
-                    hintText: 'Board certifications, licenses, etc.',
-                  ),
-                  maxLines: 2,
+                  decoration: InputDecoration(labelText: 'Certifications'),
+                  minLines: 1,
+                  maxLines: 3,
                 ),
-                const SizedBox(height: 16),
+
+                const SizedBox(height: 20),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Additional Details",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 8),
 
                 TextFormField(
                   controller: _languagesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Languages Spoken',
-                    border: OutlineInputBorder(),
-                    hintText: 'e.g., English, Twi, French',
-                  ),
+                  decoration: InputDecoration(labelText: 'Languages Spoken'),
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _affiliationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Hospital/Clinic Affiliations',
-                    border: OutlineInputBorder(),
-                    hintText: 'Current workplace or affiliations',
-                  ),
-                  maxLines: 2,
+                  decoration: InputDecoration(labelText: 'Hospital/Clinic Affiliations'),
+                  minLines: 1,
+                  maxLines: 3,
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _bioController,
-                  decoration: const InputDecoration(
-                    labelText: 'Professional Bio',
-                    border: OutlineInputBorder(),
-                    hintText: 'Brief description of your practice and expertise',
-                  ),
+                  decoration: InputDecoration(labelText: 'Professional Bio'),
+                  minLines: 1,
                   maxLines: 3,
                 ),
                 const SizedBox(height: 30),
@@ -262,11 +283,15 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  child: const Text("Create Doctor Account", 
-                    style: TextStyle(color: Colors.white, fontSize: 16)),
+                  child: const Text(
+                    "Create Doctor Account",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
 
                 const SizedBox(height: 20),
@@ -274,12 +299,15 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text("Already have an account?"),
-                    TextButton(
-                      onPressed: () {
+                    GestureDetector(
+                      onTap: () {
                         Navigator.pushNamed(context, '/login');
                       },
-                      child: const Text("Sign In"),
-                    )
+                      child: Text(
+                        " Sign In",
+                        style: TextStyle(color: Colors.green.shade800),
+                      ),
+                    ),
                   ],
                 ),
               ],

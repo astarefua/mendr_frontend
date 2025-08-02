@@ -1,7 +1,6 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../data/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -21,213 +20,159 @@ class _LoginScreenState extends State<LoginScreen> {
   String? get role => widget.role; // Now safe
 
   Future<void> _submit() async {
-  if (_formKey.currentState!.validate()) {
-    final success = await AuthService.login(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
+    if (_formKey.currentState!.validate()) {
+      final success = await AuthService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-    if (!mounted) return; // ✅ protect context usage
+      if (!mounted) return; // ✅ protect context usage
 
-    if (success) {
-      final user = await AuthService.getUserFromToken();
+      if (success) {
+        final user = await AuthService.getUserFromToken();
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      if (user != null && user.containsKey('role')) {
-        final rawRole = user['role'].toString();
-        final normalizedRole = rawRole.replaceAll("ROLE_", "").toLowerCase();
+        if (user != null && user.containsKey('role')) {
+          final rawRole = user['role'].toString();
+          final normalizedRole = rawRole.replaceAll("ROLE_", "").toLowerCase();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login successful")),
-        );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Login successful")));
 
-        if (normalizedRole == 'patient') {
-          final patientId = user['id'];
-          if (patientId != null && patientId is int) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('patientId', patientId);
+          if (normalizedRole == 'patient') {
+            final patientId = user['id'];
+            if (patientId != null && patientId is int) {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setInt('patientId', patientId);
+            }
+
+            if (!mounted) return;
+            Navigator.pushReplacementNamed(context, '/home/patient');
+          } else if (normalizedRole == 'doctor') {
+            Navigator.pushReplacementNamed(context, '/home/doctor');
+          } else if (normalizedRole == 'admin') {
+            Navigator.pushReplacementNamed(context, '/admin/dashboard');
+          } else {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("Unknown role: $rawRole")));
           }
-
-          if (!mounted) return;
-          Navigator.pushReplacementNamed(context, '/home/patient');
-        } else if (normalizedRole == 'doctor') {
-          Navigator.pushReplacementNamed(context, '/home/doctor');
-        } else if (normalizedRole == 'admin') {
-          Navigator.pushReplacementNamed(context, '/admin/dashboard');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Unknown role: $rawRole")),
+            const SnackBar(content: Text("Invalid token or missing role.")),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Invalid token or missing role.")),
+          const SnackBar(content: Text("Invalid email or password")),
         );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid email or password")),
-      );
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF6FFFC),
-
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 50),
-                const Center(
-                  child: Text(
-                    'Sign In',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
+      appBar: AppBar(
+        title: const Text("Sign In"),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Container(color: Colors.grey.shade300, height: 1),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Transform.scale(
+                scale: 2,
+                child: Image.asset(
+                  'assets/images/mendr logo.png',
+                  height: 200,
+                  fit: BoxFit.cover,
                 ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    "Let's experience the joy of telecare",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Email Address'),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) => value!.contains('@') ? null : 'Enter valid email',
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              ),
+              const SizedBox(height: 15),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email Address'),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) =>
+                    value!.contains('@') ? null : 'Enter valid email',
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                     ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                  validator: (value) => value!.length >= 6 ? null : 'Password too short',
                 ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-backgroundColor: Color(0xFF2ECC71), // Slightly bolder green
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                validator: (value) =>
+                    value!.length >= 6 ? null : 'Password too short',
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Text('Sign In', style: TextStyle(color: Colors.white)),
                 ),
-                const SizedBox(height: 20),
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Don't have an account?"),
-                      TextButton(
-                        onPressed: () {
-                          if (role != null) {
-                            Navigator.pushNamed(context, '/signup/$role');
+                child: const Text(
+                  'Sign In',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Don't have an account?"),
+                    GestureDetector(
+                      onTap: () {
+                        if (Navigator.canPop(context)) {
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context);
                           } else {
-                            Navigator.pushNamed(context, '/role-selection');
+                            Navigator.pop(context);
                           }
-                        },
-                        child: const Text('Sign Up'),
+                        } else {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/role-selection',
+                            (route) => false,
+                          );
+                        }
+                      },
+                      child: Text(
+                        ' Sign Up',
+                        style: TextStyle(color: Colors.green.shade800),
                       ),
-                    ],
-                  ),
-                )
-              ],
-            ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
