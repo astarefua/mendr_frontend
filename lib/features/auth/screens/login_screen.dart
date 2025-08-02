@@ -147,19 +147,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text("Don't have an account?"),
                     GestureDetector(
                       onTap: () {
-                        if (Navigator.canPop(context)) {
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
+                         if (role != null) {
+                            Navigator.pushNamed(context, '/signup/$role');
                           } else {
-                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/role-selection');
                           }
-                        } else {
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/role-selection',
-                            (route) => false,
-                          );
-                        }
                       },
                       child: Text(
                         ' Sign Up',
