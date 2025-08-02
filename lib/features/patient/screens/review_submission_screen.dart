@@ -1,10 +1,10 @@
 // screens/review_submission_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:telemed_frontend/features/patient/screens/review_success_screen.dart';
+
 import '../services/review_service.dart';
 import '../models/review_models.dart';
-
+import 'review_success_screen.dart';
 
 class ReviewSubmissionScreen extends StatefulWidget {
   final int doctorId;
